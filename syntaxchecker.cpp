@@ -24,7 +24,7 @@ private:
         
         for (int i = 0; i < len; ++i) {
             result[j++] = input[i];
-            if (input[i] == ',' && i + 1 < len && input[i + 1] != ' ') {
+            if ((input[i] == '(' || input[i] == ',' ||  input[i] == ')' || input[i] == '=')  && i + 1 < len && input[i + 1] != ' ') {
                 result[j++] = ' ';
             }
         }
@@ -40,32 +40,38 @@ private:
         fixCommaSpacing(src);
         char *token = strtok(src, delimiters);
         while (token != NULL) {
-            if (token[strlen(token)-1] == ';') {
-                std::cout << "True \n";
+            std::cout << token << "\n";
+            if (token[strlen(token)-1] == ';' && strlen(token) != 1) {
                 removeLastLetter(token); 
                 tokens[toknum] = strdup(token); // Store original token
                 tokens[++toknum] = strdup(";"); // Store ";" separately
             }
-            else if (token[strlen(token)-1] == ',') {
-                std::cout << "True \n";
+            else if (token[strlen(token)-1] == ','  && strlen(token) != 1) {
                 removeLastLetter(token); 
                 tokens[toknum] = strdup(token); // Store original token
-                tokens[++toknum] = strdup(","); // Store ";" separately
+                tokens[++toknum] = strdup(","); // Store "," separately
+            }
+            else if (token[strlen(token)-1] == '(') {
+                removeLastLetter(token); 
+                tokens[toknum] = strdup(token); // Store original token
+                tokens[++toknum] = strdup("("); // Store "(" separately
+            }
+            else if (token[strlen(token)-1] == ')') {
+                removeLastLetter(token); 
+                tokens[toknum] = strdup(token); // Store original token
+                tokens[++toknum] = strdup(")"); // Store ")" separately
             }
             else
                 tokens[toknum] = strdup(token);
-
-            std::cout << token << "\n";
             token = std::strtok(NULL, delimiters);
             toknum++;
         }
     }
     
-    void check() {
+    void checkVariable() {
         int stage = 0; // 0 - expect type, 1 - expect identifier, 2 - expect comma or semicolon
         for (int i = 0; i < toknum; i++) {
-            int type = getType(tokens[i]);
-            std::cout << type << "\n";
+            int type = getTypeVariable(tokens[i]);
 
             if (stage == 0) { // Expecting a data type
                 if (type == 1) {
@@ -77,42 +83,111 @@ private:
                     state = false;
                     return;
                 }
+                std::cout << "Next Up is Stage 1 (Found Data Type)\n";
                 stage = 1;
             } else if (stage == 1) { // Expecting an identifier
                 if (type != 2) {
                     std::cout << "Syntax Error: Expected identifier at token " << i + 1 << "\n";
                     std::cout << "INVALID VARIABLE DECLARATION\n";
-                    std::cout << "Pass Stage 0\n";
                     state = false;
                     return;
                 }
-                std::cout << "Pass Stage 1\n";
+                std::cout << "Next Up is Stage 2 (Found Identifier)\n";
                 stage = 2;
             } else if (stage == 3) {
                 if (type != 6) {
                     std::cout << "Syntax Error: Expected number at token " << i + 1 << "\n";
                     std::cout << "INVALID VARIABLE DECLARATION\n";
-                    std::cout << "Pass Stage 0\n";
                     state = false;
                     return;                   
                 }
-                std::cout << "found number\n";
+                std::cout << "Next Up is Stage 2 (Found Number)\n";
                 stage = 2;
             } else if (stage == 2) { // Expecting a comma or semicolon
-                std::cout << "Pass Stage 1\n";
                 if (type == 3) { // Comma found, expect another identifier
                     stage = 1;
-                    std::cout << "balik Stage 1\n";
+                    std::cout << "Goes Back to Stage 1 (Found Comma)\n";;
                 } else if (type == 4) { // Semicolon found, end statement
+                    std::cout << "Passed Final Stage (Found Semicolon)\n";                    
                     std::cout << "VALID VARIABLE DECLARATION\n";
-                    std::cout << "Pass Stage 2\n";
                     return;
                 } else if (type == 5) { // equal sign found, expect number 
                     stage = 3;
-                    std::cout << "balik Stage 3\n";
+                    std::cout << "Next Up is Stage 3 (Found Eqaul Sign)\n";
                 } else {
                     std::cout << "Syntax Error: Expected ',' or ';' at token " << i + 1 << "\n";
                     std::cout << "INVALID VARIABLE DECLARATION\n";
+                    state = false;
+                    return;
+                }
+            } 
+
+        }
+        
+        std::cout << "Syntax Error: Incomplete statement\n";
+    }
+
+    void checkFunction() {
+        int stage = 0; // 0 - expect type, 1 - expect identifier, 2 - expect comma or semicolon
+        for (int i = 0; i < toknum; i++) {
+            int type = getTypeFunction(tokens[i]);
+
+            if (stage == 0) { // Expecting a data type
+                if (type == 1) {
+                    stage = 0;
+                }
+                if (type != 0 && !(tokens[i] != nullptr && tokens[i][0] == '\0')){
+                    std::cout << "Syntax Error: Expected data type at token " << i + 1 << "\n";
+                    std::cout << "INVALID FUNCTION DECLARATION\n";
+                    state = false;
+                    return;
+                }
+                std::cout << "Next Up is Stage 1 (Found Data Type)\n";
+                stage = 1;
+
+                
+            } else if (stage == 1) { // Expecting an identifier
+                if (type != 2 && tokens[i][0] != ')' && tokens[i][0] != ',') {
+                    std::cout << "Syntax Error: Expected identifier at token " << i + 1 << "\n";
+                    std::cout << "INVALID FUNCTION DECLARATION\n";
+                    state = false;
+                    return;
+                }
+                else if (tokens[i][0] == ',') {
+                    std::cout << "FIND ANOTHER DATA TYPE\n";
+                    stage = 0;
+                }
+                else {
+                    std::cout << "Next Up is Stage 2 (Found Identifier)\n";
+                    stage = 2;
+                }
+
+            } else if (stage == 3) {
+                if (type != 6) {
+                    std::cout << "Syntax Error: Expected number at token " << i + 1 << "\n";
+                    std::cout << "INVALID FUNCTION DECLARATION\n";
+                    state = false;
+                    return;                   
+                }
+                std::cout << "Next Up is Stage 2 (Found Number)\n";
+                stage = 2;
+            } else if (stage == 2) { // Expecting a '(' or ')' or ','
+                if (type == 3) { // '(' found, expect another data type
+                    stage = 0;
+                    std::cout << "Goes Back to Stage 0 (Found '('))\n";;
+                } else if (type == 4) { // Semicolon found, end statement
+                    std::cout << "Passed Final Stage (Found Semicolon)\n";                    
+                    std::cout << "VALID FUNCTION DECLARATION\n";
+                    return;
+                } else if (type == 5) { // ')' found, expect a semicolon
+                    stage = 2;
+                    std::cout << "Next Up is Stage 2 (Found ')')\n";
+                } else if (type == 7) { // ',' found, expect a data type
+                    stage = 0;
+                    std::cout << "Next Up is Stage 0 (Found ',')\n";
+                } else {
+                    std::cout << "Syntax Error: Expected ';' at token " << i + 1 << "\n";
+                    std::cout << "INVALID FUNCTION DECLARATION\n";
                     state = false;
                     return;
                 }
@@ -140,7 +215,7 @@ private:
         return true;
     }
 
-    bool isNumber(const char* str) {
+    bool isNumberOrWord(const char* str) {
         if (!str || *str == '\0') return false;
     
         int i = 0;
@@ -151,11 +226,14 @@ private:
             i++;
         }
     
-        bool hasDigits = false;
+        bool hasValidChars = false;
     
         for (; str[i] != '\0'; i++) {
-            if (str[i] >= '0' && str[i] <= '9') {
-                hasDigits = true;
+            if ((str[i] >= '0' && str[i] <= '9') || 
+                (str[i] >= 'A' && str[i] <= 'Z') || 
+                (str[i] >= 'a' && str[i] <= 'z') || 
+                str[i] == '\'') {
+                hasValidChars = true;
             } else if (str[i] == '.') {
                 if (hasDecimal) return false; // More than one decimal point is invalid
                 hasDecimal = true;
@@ -164,11 +242,12 @@ private:
             }
         }
     
-        return hasDigits; // Must have at least one digit
+        return hasValidChars; // Must have at least one valid character
     }
+    
 
 
-    int getType(const char* str) {
+    int getTypeVariable(const char* str) {
         if (strcmp(str, "int") == 0 || strcmp(str, "char") == 0 || 
             strcmp(str, "float") == 0 || strcmp(str, "double") == 0)
             return 0;
@@ -182,19 +261,47 @@ private:
             return 4;
         else if (strcmp(str, "=") == 0)
             return 5;
-        else if (isNumber(str)) 
-            return 6;          
+        else if (isNumberOrWord(str)) 
+            return 6;     
         else
             return 7;
     }
 
 
+    int getTypeFunction(const char* str) {
+        if (strcmp(str, "int") == 0 || strcmp(str, "char") == 0 || 
+            strcmp(str, "float") == 0 || strcmp(str, "double") == 0 || strcmp(str, "void") == 0)
+            return 0;
+        else if (strcmp(str, " ") == 0)
+            return 1;
+        else if (isIdentifier(str))  // Check if `str` is a valid identifier
+            return 2;
+        else if (strcmp(str, "(") == 0)
+            return 3;
+        else if (strcmp(str, ";") == 0)
+            return 4;
+        else if (strcmp(str, ")") == 0)
+            return 5;
+        else if (isNumberOrWord(str)) 
+            return 6;     
+        else if (strcmp(str, ",") == 0)
+            return 7;          
+        else
+            return 8;
+    }
+
     
 public:
     SyntaxChecker(const char *input) {
-        std::strcpy(src, input);
-        tokenize();
-        check(); 
+        if (input[0] == '1' || input[0] == '2') {
+            std::strcpy(src, input + 2); // Skip the first character and the space
+            tokenize();
+            if (input[0] == '1') {
+                checkVariable();
+            } else {
+                checkFunction();
+            }
+        }
     }
 
     void printTokens() const {
