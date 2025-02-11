@@ -1,12 +1,13 @@
 #include <iostream>
 #include <cstring>
 #include <cctype>
+#include <unordered_set>
 
 class SyntaxChecker {
 private: 
     char src[100];
     const char *delimiters;
-    char *tokens[10];
+    char *tokens[40];
     bool state;
     int toknum;
 
@@ -19,24 +20,33 @@ private:
     
     void fixCommaSpacing(char* input) {
         int len = std::strlen(input);
-        char* result = new char[len * 2]; // Allocate more space to accommodate added spaces
+        char* result = new char[len * 3]; // Allocate more space to accommodate added spaces
         int j = 0;
         
         for (int i = 0; i < len; ++i) {
+            // Insert a space before if it's not the first character and there's no space before
+            if (i > 0 && (input[i] == '(' || input[i] == ',' || input[i] == ')' || input[i] == '=') && input[i - 1] != ' ') {
+                result[j++] = ' ';
+            }
+    
             result[j++] = input[i];
-            if ((input[i] == '(' || input[i] == ',' ||  input[i] == ')' || input[i] == '=')  && i + 1 < len && input[i + 1] != ' ') {
+    
+            // Insert a space after if there's no space after
+            if ((input[i] == '(' || input[i] == ',' || input[i] == ')' || input[i] == '=') && i + 1 < len && input[i + 1] != ' ') {
                 result[j++] = ' ';
             }
         }
+    
         result[j] = '\0'; // Null-terminate the string
-        
+    
         std::strcpy(input, result);
         delete[] result;
     }
 
+
     void tokenize() {
-        delimiters = " ";
         toknum = 0;
+        delimiters = " ";
         fixCommaSpacing(src);
         char *token = strtok(src, delimiters);
         while (token != NULL) {
@@ -68,6 +78,19 @@ private:
         }
     }
     
+    void variableAssignment() { //  handles variable to variable assignment
+        std::unordered_set<std::string> seenTokens;
+        for (int i = 1; i < toknum; i++) { // Start from 1 to check previous token
+            if (tokens[i - 1] == std::string("=") && seenTokens.find(tokens[i]) != seenTokens.end()) {
+                // Allocate new memory for modified token
+                std::string modifiedToken = "'" + std::string(tokens[i]) + "'";
+                tokens[i] = strdup(modifiedToken.c_str()); // strdup allocates new memory
+            } else {
+                seenTokens.insert(tokens[i]);
+            }
+        }
+    }
+    
     void checkVariable() {
         int stage = 0; // 0 - expect type, 1 - expect identifier, 2 - expect comma or semicolon
         for (int i = 0; i < toknum; i++) {
@@ -95,7 +118,9 @@ private:
                 std::cout << "Next Up is Stage 2 (Found Identifier)\n";
                 stage = 2;
             } else if (stage == 3) {
+                variableAssignment();
                 if (type != 6) {
+                    std::cout << type << std::endl;
                     std::cout << "Syntax Error: Expected number at token " << i + 1 << "\n";
                     std::cout << "INVALID VARIABLE DECLARATION\n";
                     state = false;
@@ -199,6 +224,20 @@ private:
     }
     
 
+    bool isTokenUnique(const char* str) { // handles variable redeclaration 
+        int count = 0;
+        for (int i = 0; i < toknum; i++) {
+            if (strcmp(tokens[i], str) == 0) {
+                count++;
+                if (count > 1) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+
     bool isIdentifier(const char* str) {
         if (!str) return false;
     
@@ -220,40 +259,45 @@ private:
     
         int i = 0;
         bool hasDecimal = false;
+        bool hasDigits = false;
+        bool hasLetters = false;
     
         // Check for optional sign
         if (str[i] == '+' || str[i] == '-') {
             i++;
         }
     
-        bool hasValidChars = false;
+        if (str[i] == '\0') return false; // String cannot be just a sign
     
         for (; str[i] != '\0'; i++) {
-            if ((str[i] >= '0' && str[i] <= '9') || 
-                (str[i] >= 'A' && str[i] <= 'Z') || 
-                (str[i] >= 'a' && str[i] <= 'z') || 
-                str[i] == '\'') {
-                hasValidChars = true;
+            if (std::isdigit(str[i])) {
+                hasDigits = true;
+            } else if (std::isalpha(str[i]) || str[i] == '\'') {
+                hasLetters = true;
             } else if (str[i] == '.') {
-                if (hasDecimal) return false; // More than one decimal point is invalid
+                if (hasDecimal || hasLetters) return false; // Invalid if more than one decimal or if a letter exists
                 hasDecimal = true;
             } else {
                 return false; // Any other character is invalid
             }
         }
     
-        return hasValidChars; // Must have at least one valid character
+        // If there is a decimal, there must be at least one digit before or after it
+        if (hasDecimal && !hasDigits) return false;
+    
+        // A mix of letters and a decimal is invalid (e.g., "12.3abc")
+        if (hasLetters && hasDecimal) return false;
+    
+        return true;
     }
     
-
-
     int getTypeVariable(const char* str) {
         if (strcmp(str, "int") == 0 || strcmp(str, "char") == 0 || 
             strcmp(str, "float") == 0 || strcmp(str, "double") == 0)
             return 0;
         else if (strcmp(str, " ") == 0)
             return 1;
-        else if (isIdentifier(str))  // Check if `str` is a valid identifier
+        else if (isIdentifier(str) && isTokenUnique(str))  // Check if `str` is a valid identifier
             return 2;
         else if (strcmp(str, ",") == 0)
             return 3;
@@ -261,9 +305,11 @@ private:
             return 4;
         else if (strcmp(str, "=") == 0)
             return 5;
-        else if (isNumberOrWord(str)) 
+        else if (isNumberOrWord(str)) {
+            std::cout << "yurr" << std::endl;
             return 6;     
-        else
+        }
+        else 
             return 7;
     }
 
