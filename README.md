@@ -1,25 +1,27 @@
-# Syntax Checker for C Code
+# Syntax Checker for C
 
 ## General Description
-Before a compiler converts a source file into machine-readable code, the syntax of the source file is checked first. For this MP, you are going to simulate this syntax checking for source code written in C.
+Before a compiler converts a source file into machine-readable code, the syntax of the source file is checked first. This program simulates syntax checking for source code written in C.
 
 ## Scope
-The MP will require you to check the syntax of the following expressions in C:
-- Variable declaration
-- Function declaration
+This program checks the syntax of the following expressions in C:
 
-Pointers and arrays are not in scope for this MP.
+- Variable declarations
+- Function declarations
 
-### Variable Declaration
-The MP will stick with primitive types. The types are:
+Pointers and arrays are not included.
+
+### Variable Declarations
+The program verifies variable declarations using primitive types:
+
 - `int`
 - `char`
 - `float`
 - `double`
 
-Multiple declarations, including those with initializations, are in scope. This also means that identifiers have to be checked. They should follow the naming rule of C, i.e., they can start with `_` or any letter from the English alphabet, followed by 0 or more alphanumeric characters, including `_`.
+It supports multiple declarations, including those with initializations. Identifiers are checked to ensure they follow C's naming rules: they must start with an underscore (`_`) or a letter, followed by zero or more alphanumeric characters (including underscores).
 
-#### Samples
+#### Examples
 ```c
 int x;
 char c, h;
@@ -27,10 +29,10 @@ float pi = 3.1416;
 double x, y, z = 6.022140857;
 ```
 
-### Function Declaration
-In a similar fashion, what will be in scope are functions returning primitive type values and primitive type arguments only. In addition, functions that do not return any value, i.e., declared as `void`, are in scope. Functions with and without any argument list are in scope. And like in variable declarations, multiple function declarations are in scope too.
+### Function Declarations
+The program supports function declarations returning primitive type values and accepting primitive type arguments. Functions that do not return a value (`void`) are also supported. Both function declarations with and without argument lists are checked. Multiple function declarations in a single statement are also supported.
 
-#### Samples
+#### Examples
 ```c
 void display();
 void compute(void);
@@ -43,36 +45,35 @@ int isPrime(int n);
 ```
 
 ## Input
-The input is entirely from standard I/O (console). It will contain a number of lines. The first input is a positive number. This positive number, say `c`, represents the number of test cases there are. The actual test cases will follow in the next lines. Each test case starts with either `1` or `2`. `1` indicates that the test is supposed to be a variable declaration, `2` a function declaration.
+The program reads input from standard I/O (console). The first input is a positive number representing the number of test cases. The actual test cases follow in subsequent lines. Each test case starts with either `1` or `2`:
+
+- `1` indicates a variable declaration
+- `2` indicates a function declaration
 
 ## Output
-Print all output on the console (standard output). It should have `c` lines, `c` being the number of test cases. If the test case is valid, print:
-```
-VALID <type>.
-```
-Where `<type>` is either:
-- `VARIABLE DECLARATION`
-- `FUNCTION DECLARATION`
+For each test case, the program prints a single line:
+- If the test case is valid: `VALID VARIABLE DECLARATION.` or `VALID FUNCTION DECLARATION.`
+- If the test case is invalid: `INVALID VARIABLE DECLARATION.` or `INVALID FUNCTION DECLARATION.`
 
-## Constraints and Other Instructions
-- Implement this using **C, C++, Java, or Python**.
-- You are to include all the references you have used in solving this MP. The references may be your old notes, online resources, etc. Include them in your source file as comments or documentation.
-- If you have any questions about the MP, post them in the appropriate forum discussion board.
-- As an additional reference, please check the sample test cases provided for this MP.
+## Constraints and Additional Instructions
+- The program is implemented in C, C++, Java, or Python.
+- References used in developing this program should be included as comments or documentation in the source file.
+- If any questions arise, refer to relevant programming resources.
 
-## Sample Test Case
+## Sample Test Cases
 ### Input
 ```
 4
 1 int x, y, z = 10;
 1 double a int function();
 2 INT function2(void);
-2 int solve(int,char,double x,float,int,int);
+2 int solve(int, char, double x, float, int, int);
 ```
 
 ### Output
 ```
-VALID VARIABLE DECLARATION
-INVALID VARIABLE DECLARATION
-INVALID FUNCTION DECLARATION
-VALID FUNCTION DECLARATION
+VALID VARIABLE DECLARATION.
+INVALID VARIABLE DECLARATION.
+INVALID FUNCTION DECLARATION.
+VALID FUNCTION DECLARATION.
+```
