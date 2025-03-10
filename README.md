@@ -1,9 +1,9 @@
 # Syntax Checker for C
 
-## General Description
+### Overview
 Before a compiler converts a source file into machine-readable code, the syntax of the source file is checked first. This program simulates syntax checking for source code written in C.
 
-## Scope
+### Scope
 This program checks the syntax of the following expressions in C:
 
 - Variable declarations
@@ -44,24 +44,24 @@ int gcd(int, int), lcm(int, int);
 int isPrime(int n);
 ```
 
-## Input
+### Input
 The program reads input from standard I/O (console). The first input is a positive number representing the number of test cases. The actual test cases follow in subsequent lines. Each test case starts with either `1` or `2`:
 
 - `1` indicates a variable declaration
 - `2` indicates a function declaration
 
-## Output
+### Output
 For each test case, the program prints a single line:
 - If the test case is valid: `VALID VARIABLE DECLARATION.` or `VALID FUNCTION DECLARATION.`
 - If the test case is invalid: `INVALID VARIABLE DECLARATION.` or `INVALID FUNCTION DECLARATION.`
 
-## Constraints and Additional Instructions
+### Constraints and Additional Instructions
 - The program is implemented in C, C++, Java, or Python.
 - References used in developing this program should be included as comments or documentation in the source file.
 - If any questions arise, refer to relevant programming resources.
 
-## Sample Test Cases
-### Input
+### Sample Test Cases
+#### Input
 ```
 4
 1 int x, y, z = 10;
@@ -70,10 +70,14 @@ For each test case, the program prints a single line:
 2 int solve(int, char, double x, float, int, int);
 ```
 
-### Output
+#### Output
 ```
 VALID VARIABLE DECLARATION.
 INVALID VARIABLE DECLARATION.
 INVALID FUNCTION DECLARATION.
 VALID FUNCTION DECLARATION.
 ```
+## Authors
+
+- [@kiloumanjaro](https://github.com/kiloumanjaro)
+
